@@ -189,6 +189,17 @@ class EvoMistralForCausalLM(nn.Module, SupportsLoRA, SupportsPP):
             self.maybe_remap_mistral(name, loaded_weight)
             for name, loaded_weight in weights)
 
+    # add for rewrite weights
+    def rewrite_weights(self, state_dict: dict) -> Set[str]:
+        weights = []
+        for name, param in state_dict.items():
+            name, param = self.maybe_remap_mistral(name.replace("model.", "", 1), param) # model.を除去
+            weights.append((name, param))
+
+        loader = AutoWeightsLoader(self, skip_prefixes=(["lm_head."]
+                           if self.config.tie_word_embeddings else None)) # 重みをすべて上書きするためskip_prefixesはNone
+        return loader.load_weights(weights)
+
     def load_kv_cache_scales(self, quantization_param_path: str) -> None:
         self.model.load_kv_cache_scales(quantization_param_path)
 
@@ -223,3 +234,4 @@ class EvoMistralForCausalLM(nn.Module, SupportsLoRA, SupportsPP):
                 name = name.replace(item, mapping[item])
 
         return name, loaded_weight
+
