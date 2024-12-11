@@ -730,6 +730,8 @@ class ModelConfig:
         return start, end
 
     def get_num_layers(self, parallel_config: "ParallelConfig") -> int:
+        if self.hf_config.model_type == "evomistral":
+            return self.hf_config.num_hops
         start, end = self.get_layers_start_end_indices(parallel_config)
         return end - start
 
