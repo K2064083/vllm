@@ -4,10 +4,12 @@ Whenever you add an architecture to this page, please also update
 """
 import importlib
 import os
+os.environ["MKL_THREADING_LAYER"] = "GNU"
 import pickle
 import subprocess
 import sys
 import tempfile
+import numpy as np
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from functools import lru_cache

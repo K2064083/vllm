@@ -730,6 +730,7 @@ class ModelConfig:
         return start, end
 
     def get_num_layers(self, parallel_config: "ParallelConfig") -> int:
+        print(self.hf_config.model_type)
         if self.hf_config.model_type == "evomistral":
             return self.hf_config.num_hops
         start, end = self.get_layers_start_end_indices(parallel_config)
@@ -748,6 +749,8 @@ class ModelConfig:
 
         if is_transformer:
             # Handle the basic case first
+            if self.hf_config.model_type == "evomistral":
+                return self.hf_config.num_hops if attn_block_type else 0
             return end - start if attn_block_type else 0
         elif self.is_attention_free:
             # Attention free

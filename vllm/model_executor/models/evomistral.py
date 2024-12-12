@@ -56,7 +56,7 @@ class EvoMistralModel(_LlamaModel):
             assert intermediate_tensors is not None
             hidden_states = intermediate_tensors["hidden_states"]
             residual = intermediate_tensors["residual"]
-
+        print("lenlen",len(self.input_layers),len(kv_caches))
         for idx, layer_ix in enumerate(self.input_layers):
             layer = self.layers[layer_ix]
             scale = self.input_scales[idx].to(hidden_states.device)
@@ -192,8 +192,19 @@ class EvoMistralForCausalLM(nn.Module, SupportsLoRA, SupportsPP):
     # add for rewrite weights
     def rewrite_weights(self, state_dict: dict) -> Set[str]:
         weights = []
+        handled_params = set()  # 処理済みのパラメータ名を格納するセット
         for name, param in state_dict.items():
-            name, param = self.maybe_remap_mistral(name.replace("model.", "", 1), param) # model.を除去
+            if "input_scales" in name:
+                weights.append(("model.input_scales", param))
+                continue
+            if "input_layers" in name:
+                weights.append(("model.input_layers", param))
+                continue
+            if "embed_tokens" in name:
+                weights.append(("model.embed_tokens.weight", param))
+                continue
+            # パラメータ名を正規化し、Mistral のマッピングを適用
+            name, param = self.maybe_remap_mistral(name, param)
             weights.append((name, param))
 
         loader = AutoWeightsLoader(self, skip_prefixes=(["lm_head."]
