@@ -56,7 +56,7 @@ class EvoMistralModel(_LlamaModel):
             assert intermediate_tensors is not None
             hidden_states = intermediate_tensors["hidden_states"]
             residual = intermediate_tensors["residual"]
-        print("lenlen",len(self.input_layers),len(kv_caches))
+            
         for idx, layer_ix in enumerate(self.input_layers):
             layer = self.layers[layer_ix]
             scale = self.input_scales[idx].to(hidden_states.device)
